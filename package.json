@@ -1,0 +1,19 @@
+{
+  "name": "boulder-civics-wiki",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.js",
+    "search": "pagefind --site dist",
+    "deploy": "node build.js && pagefind --site dist && gh-pages -d dist",
+    "full": "npm run build && npm run search"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "marked": "^12.0.0"
+  },
+  "devDependencies": {
+    "gh-pages": "^6.2.0",
+    "pagefind": "^1.1.0"
+  }
+}

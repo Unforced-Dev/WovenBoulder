@@ -1,0 +1,51 @@
+name: Build and Deploy
+
+on:
+  # Manual trigger — run whenever you want to update the site
+  workflow_dispatch:
+  # Optional: run on a schedule (e.g. weekly on Sunday nights)
+  # schedule:
+  #   - cron: '0 4 * * 0'
+
+permissions:
+  contents: write  # needed to push to gh-pages branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      # ── Tailscale (required because the vault is on a Tailscale network) ──
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+          # Create an ephemeral, reusable key at https://login.tailscale.com/admin/settings/keys
+          # Store it as a GitHub Actions secret named TAILSCALE_AUTHKEY
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site
+        env:
+          VAULT_URL: ${{ secrets.VAULT_URL }}
+          VAULT_TOKEN: ${{ secrets.VAULT_TOKEN }}
+          SITE_BASE: ${{ secrets.SITE_BASE || '/' }}
+        run: node build.js
+
+      - name: Build search index
+        run: npx pagefind --site dist
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: dist
+          # Optional: custom domain
+          # cname: civics.example.com
