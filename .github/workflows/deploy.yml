@@ -47,5 +47,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: dist
-          # Optional: custom domain
-          # cname: civics.example.com
+          # Custom domain (CNAME file written to gh-pages on every deploy)
+          cname: wovenboulder.com
