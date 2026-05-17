@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search — Boulder Civics</title>
+  <meta name="description" content="Search all Boulder Civics meeting records and transcripts.">
+  
+  <link rel="stylesheet" href="/style.css">
+  
+</head>
+<body class="">
+  <a href="#main" class="skip-link">Skip to content</a>
+  <header class="site-header">
+    <div class="container">
+      <a href="/" class="site-logo">
+        <span class="logo-icon">⚖</span>
+        <span>Boulder Civics</span>
+      </a>
+      <nav class="site-nav" aria-label="Main navigation">
+        <a href="/">All Bodies</a>
+        <a href="/timeline/">Timeline</a>
+        <a href="/issues/">Issues</a>
+        <a href="/search/">Search</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main" class="container">
+    
+    <div class="search-page">
+      <h1>Search Boulder Civics</h1>
+      <p>Search across all meetings, bodies, and transcripts.</p>
+      <div id="search"></div>
+    </div>
+    <script>
+      new PagefindUI({ element: "#search", showSubResults: true, showImages: false });
+    </script>
+  
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>Meeting records sourced from <a href="https://www.youtube.com/@CityofBoulder" rel="noopener">City of Boulder YouTube</a>. This is an independent civic resource, not affiliated with the City of Boulder.</p>
+      <p>Built with <a href="https://github.com/ParachuteComputer/parachute-vault" rel="noopener">Parachute Vault</a>.</p>
+    </div>
+  </footer>
+
+  <link href="/pagefind/pagefind-ui.css" rel="stylesheet">
+  <script src="/pagefind/pagefind-ui.js"></script>
+</body>
+</html>
