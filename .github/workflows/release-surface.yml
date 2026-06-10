@@ -50,7 +50,9 @@ jobs:
 
       - uses: oven-sh/setup-bun@v2
         with:
-          bun-version: latest
+          # Pinned, not `latest`: this template gets copied — drift in a copied
+          # workflow silently changes bundle output. Bump deliberately.
+          bun-version: "1.3.13"
 
       - name: Resolve version
         id: version
@@ -83,6 +85,7 @@ jobs:
       - name: Bundle server entry (self-contained)
         working-directory: ${{ env.SURFACE_DIR }}
         run: |
+          rm -rf .pack # idempotent: a stale .pack would nest dist/dist on re-run
           bun build "$SERVER_ENTRY" --target=bun --format=esm \
             --outfile=.pack/package/server/index.js
 
@@ -90,6 +93,10 @@ jobs:
         working-directory: ${{ env.SURFACE_DIR }}
         run: |
           cp -R dist .pack/package/dist
+          # NOTE for template copiers: if your surface declares
+          # server.capabilities (e.g. websockets), the rewrite below preserves
+          # it — but if you ADD capabilities at pack time, extend this filter
+          # (.server.capabilities = [...]). Absent key = installer defaults [].
           jq --arg v "${{ steps.version.outputs.version }}" \
             '.server.entry = "server/index.js" | .version = $v' \
             meta.json > .pack/package/meta.json
