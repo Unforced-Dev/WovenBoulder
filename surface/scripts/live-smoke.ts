@@ -69,7 +69,16 @@ const checks: Array<[string, (data: any) => boolean]> = [
   // and joint-meeting carry none yet) — the floor tracks the live data.
   ["/api/list-bodies", (d) => d.count >= 19],
   ["/api/recent-meetings?limit=5", (d) => d.count === 5 && d.items.every((m: any) => !("content" in m))],
-  ["/api/recent-meetings?body=city-council&type=study-session&limit=3", (d) => d.count <= 3],
+  // Positive control on the INDEXED meta[meeting_type][eq] filter: the live
+  // vault has 192 study-sessions with city-council dominant, so zero results
+  // would mean the indexed filter silently broke — not an empty category.
+  [
+    "/api/recent-meetings?body=city-council&type=study-session&limit=3",
+    (d) =>
+      d.count >= 1 &&
+      d.count <= 3 &&
+      d.items.every((m: any) => m.meetingType === "study-session"),
+  ],
   ["/api/issues?limit=10", (d) => d.count > 0],
   ["/api/domains", (d) => d.count >= 10],
   ["/api/search?q=housing&limit=5", (d) => d.count > 0],
