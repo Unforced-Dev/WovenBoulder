@@ -4,6 +4,5 @@
 !dist/
 
 # Release-packaging staging + artifacts (.github/workflows/release-surface.yml).
-# Scoped so vendor/*.tgz (the tracked kit pins) stays unaffected.
 /.pack/
 /woven-boulder-surface-*.tgz

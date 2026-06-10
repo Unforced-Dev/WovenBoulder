@@ -1,10 +1,10 @@
 # Woven Boulder — backed surface (server + SPA)
 
 The backed-surface package for the Boulder civics site, built on
-`@openparachute/surface-server` (the R4 kit; vendored — see
-[vendor/README.md](./vendor/README.md)). **Additive to this repo**: the
-existing static-gen site (`../build.js`) is untouched and keeps deploying
-independently.
+`@openparachute/surface-server` (the R4 kit, from npm — `^0.1.1`; the
+original vendored-tarball pins were retired once the kit published).
+**Additive to this repo**: the existing static-gen site (`../build.js`)
+is untouched and keeps deploying independently.
 
 - `meta.json` — the surface-host P1 contract (the host reads it at the
   package ROOT — verified against the pinned host's `ui-registry.ts` +

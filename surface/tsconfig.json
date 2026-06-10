@@ -2,8 +2,8 @@
   "compilerOptions": {
     // Mirrors the surface-server kit's own tsconfig: this package ships TS
     // source that runs under Bun inside the surface-host daemon, and the
-    // vendored kit resolves to TS source (`module: src/index.ts`), so the
-    // bundler-mode + .ts-extension settings must match the kit's.
+    // kit (npm, raw-TS publish) resolves to TS source (`module: src/index.ts`),
+    // so the bundler-mode + .ts-extension settings must match the kit's.
     "lib": ["ESNext"],
     "target": "ESNext",
     "module": "Preserve",
@@ -26,5 +26,5 @@
     "noPropertyAccessFromIndexSignature": false
   },
   "include": ["server", "scripts"],
-  "exclude": ["node_modules", "vendor"]
+  "exclude": ["node_modules"]
 }
