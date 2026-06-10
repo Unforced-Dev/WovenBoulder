@@ -1,0 +1,4 @@
+# The workspace-root .gitignore ignores `dist/` (the static site's build
+# output). This surface package's dist/ is its SHIPPED bundle (surface-host
+# requires dist/index.html to register the surface) — unignore it here.
+!dist/
