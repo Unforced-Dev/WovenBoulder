@@ -7,7 +7,10 @@ existing static-gen site (`../build.js`) is untouched and keeps deploying
 independently.
 
 - `meta.json` — the surface-host P1 contract (the host reads it at the
-  package ROOT). Declares `server.entry: server/index.ts`,
+  package ROOT — verified against the pinned host's `ui-registry.ts` +
+  `meta-schema.ts`, which also require a `dist/index.html` to register the
+  surface; `dist/` here is a placeholder page until part 2 ships the real
+  frontend). Declares `server.entry: server/index.ts`,
   `audience: "public"`, `vault_default: "boulder"`, no websocket capability.
 - `server/index.ts` — `createBackend(ctx)` default export.
 - `server/gate.ts` — **the one choke point**: every vault read the kit's
@@ -21,7 +24,7 @@ independently.
 | Projection | Endpoint | Params |
 |---|---|---|
 | list-bodies | `GET /surface/woven-boulder/api/list-bodies` | — |
-| recent-meetings | `GET …/api/recent-meetings` | `body?` (21-slug enum) · `type?` (6-type enum) · `from?`/`to?` (YYYY-MM-DD) · `limit?` (1–50, default 20) |
+| recent-meetings | `GET …/api/recent-meetings` | `body?` (21-slug enum) · `type?` (6-type enum — rides the INDEXED `meta[meeting_type][eq]` query; card values dual-read `meeting_type` → kebab fallback) · `from?`/`to?` (YYYY-MM-DD) · `limit?` (1–50, default 20) |
 | meeting-brief | `GET …/api/meeting-brief` | `path` (vault path) — 404 when missing/non-public |
 | meeting-transcript | `GET …/api/meeting-transcript` | `path` · `page?` (1-based, ~10KB pages) |
 | issues | `GET …/api/issues` | `status?` (7-status enum) · `domain?` · `lead_body?` · `limit?` |
