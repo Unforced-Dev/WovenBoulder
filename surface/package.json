@@ -1,0 +1,25 @@
+{
+  "name": "woven-boulder-surface",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Woven Boulder — backed surface over the boulder vault (public civic projections + MCP). Kit deps are vendored tarballs pinned from parachute-surface main @ ba10f47 (R4 kit) — see vendor/README.md; switch to npm ranges once @openparachute/surface-server publishes.",
+  "scripts": {
+    "test": "bun test server/",
+    "typecheck": "tsc --noEmit",
+    "smoke:live": "LIVE_SMOKE=1 bun scripts/live-smoke.ts"
+  },
+  "dependencies": {
+    "@openparachute/surface": "file:./vendor/openparachute-surface-0.3.0.tgz",
+    "@openparachute/surface-client": "file:./vendor/openparachute-surface-client-0.2.0.tgz",
+    "@openparachute/surface-server": "file:./vendor/openparachute-surface-server-0.1.0.tgz"
+  },
+  "overrides": {
+    "@openparachute/surface": "file:./vendor/openparachute-surface-0.3.0.tgz",
+    "@openparachute/surface-client": "file:./vendor/openparachute-surface-client-0.2.0.tgz"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.0",
+    "typescript": "^5"
+  }
+}

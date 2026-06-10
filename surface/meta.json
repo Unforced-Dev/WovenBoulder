@@ -1,0 +1,14 @@
+{
+  "name": "woven-boulder",
+  "displayName": "Woven Boulder",
+  "tagline": "Boulder civic meetings, issues, and topics — public projections over the boulder vault.",
+  "path": "/surface/woven-boulder",
+  "version": "0.1.0",
+  "audience": "public",
+  "vault_default": "boulder",
+  "scopes_required": ["vault:boulder:read"],
+  "server": {
+    "entry": "server/index.ts",
+    "format": "markdown"
+  }
+}
