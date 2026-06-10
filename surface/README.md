@@ -97,3 +97,45 @@ bun run build        # emits ../dist (commit it — the served bundle)
 
 `bunx vite preview` serves the built `dist/` with the same API proxy for a
 production-shaped smoke.
+
+## Releasing — the installable tarball
+
+[`.github/workflows/release-surface.yml`](../.github/workflows/release-surface.yml)
+runs on every **published GitHub release** (and `workflow_dispatch` for
+testing, which uploads a run artifact instead): it runs the backend gates,
+builds the web SPA, bundles the server entry into a **self-contained**
+`server/index.js` (`bun build --target=bun` — the installer copies only
+`dist/` + the entry's first path segment, so no `node_modules` ride along),
+and attaches `woven-boulder-surface-<version>.tgz` to the release.
+
+Tarball layout (derived from surface-host's URL-source installer —
+`url-fetch.ts` + `admin-routes.ts` in parachute-surface):
+
+```
+package/              ← single top-level dir
+  meta.json           ← server.entry rewritten to server/index.js,
+                        version stamped from the release tag
+  dist/index.html …   ← the built SPA (required by the installer)
+  server/index.js     ← the bundled backend (plain files only — the
+                        installer skips symlinks)
+```
+
+To cut a release: `gh release create v<X.Y.Z>` (or the GitHub UI) — the
+workflow does the rest. The workflow doubles as the **template** for other
+backed surfaces; the surface-specific bits live in its `env` block.
+
+## Add Woven Boulder to your parachute
+
+1. Copy the `woven-boulder-surface-<version>.tgz` **asset URL** from the
+   latest [GitHub release](https://github.com/Unforced-Dev/WovenBoulder/releases).
+2. In your Surface admin (`/surface/admin/`): **Add surface → URL**, paste
+   the asset URL. The installer validates the bundle and the server block
+   (the trust act: this mounts backend code in the surface daemon).
+3. Give the surface its vault credential: in the **hub admin → Connections**,
+   approve a `surface` module **vault read** credential for the vault that
+   holds the Boulder civic notes (`vault_default` is `boulder`). The
+   backend's projections only ever expose notes passing the publicness gate
+   (`Boulder Civics/` + content-type allowlist), so a vault-wide read
+   credential stays safe — but scope it down if your vault holds more.
+4. The site is live at `/surface/woven-boulder/`; the public MCP endpoint is
+   `POST /surface/woven-boulder/api/mcp`.

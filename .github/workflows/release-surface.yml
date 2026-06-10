@@ -1,0 +1,133 @@
+# Release the installable surface tarball.
+#
+# TEMPLATE NOTE: this workflow is the reference packaging flow for BACKED
+# surfaces (the upcoming docs editor and any other surface package should
+# copy it). Everything surface-specific rides the `env` block below —
+# point SURFACE_DIR / TARBALL_BASENAME / SERVER_ENTRY at your package and
+# the rest is generic.
+#
+# What it produces: a `.tgz` whose layout matches what surface-host's
+# URL-source add flow expects (packages/surface-host/src/url-fetch.ts +
+# admin-routes.ts in parachute-surface):
+#
+#   package/                  ← single top-level dir (npm convention;
+#     meta.json               ←   url-fetch locatePackageRoot picks it)
+#     dist/index.html + …     ← required by the installer's validation
+#     server/index.js         ← BUNDLED server entry (self-contained:
+#                                 the install copies only dist/ plus the
+#                                 entry's first path segment — no
+#                                 node_modules ride along, so all deps
+#                                 must be inlined). Plain files only —
+#                                 the installer skips symlinks.
+#
+# meta.json is rewritten at pack time: `server.entry` → the bundled
+# server/index.js (the repo's meta points at server/index.ts for dev) and
+# `version` → the release version.
+#
+# "Add woven-boulder to your parachute": Surface admin → Add surface →
+# URL → the release asset URL this workflow attaches. See surface/README.md.
+
+name: Release surface tarball
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: # testing: builds + validates, uploads as a run artifact
+
+permissions:
+  contents: write # gh release upload
+
+env:
+  SURFACE_DIR: surface
+  TARBALL_BASENAME: woven-boulder-surface
+  SERVER_ENTRY: server/index.ts # dev entry, bundled to server/index.js
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "release" ]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            VERSION="${VERSION#v}"
+          else
+            VERSION="$(jq -r .version "$SURFACE_DIR/meta.json")-dev.${GITHUB_RUN_NUMBER}"
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Packing version $VERSION"
+
+      - name: Install backend deps
+        working-directory: ${{ env.SURFACE_DIR }}
+        run: bun install --frozen-lockfile
+
+      - name: Backend gates (tests are fixture-only — no vault needed)
+        working-directory: ${{ env.SURFACE_DIR }}
+        run: |
+          bun test server/
+          bun run typecheck
+
+      - name: Build web SPA
+        working-directory: ${{ env.SURFACE_DIR }}/web
+        run: |
+          bun install --frozen-lockfile
+          bun run build # emits ../dist
+
+      - name: Bundle server entry (self-contained)
+        working-directory: ${{ env.SURFACE_DIR }}
+        run: |
+          bun build "$SERVER_ENTRY" --target=bun --format=esm \
+            --outfile=.pack/package/server/index.js
+
+      - name: Assemble package
+        working-directory: ${{ env.SURFACE_DIR }}
+        run: |
+          cp -R dist .pack/package/dist
+          jq --arg v "${{ steps.version.outputs.version }}" \
+            '.server.entry = "server/index.js" | .version = $v' \
+            meta.json > .pack/package/meta.json
+
+      - name: Pack tarball
+        id: pack
+        working-directory: ${{ env.SURFACE_DIR }}
+        run: |
+          TARBALL="$TARBALL_BASENAME-${{ steps.version.outputs.version }}.tgz"
+          tar -czf "$TARBALL" -C .pack package
+          echo "tarball=$TARBALL" >> "$GITHUB_OUTPUT"
+
+      - name: Validate tarball layout (the installer's expectations)
+        working-directory: ${{ env.SURFACE_DIR }}
+        run: |
+          LISTING="$(tar -tzf "${{ steps.pack.outputs.tarball }}")"
+          for required in package/meta.json package/dist/index.html package/server/index.js; do
+            echo "$LISTING" | grep -qx "$required" || { echo "MISSING $required"; exit 1; }
+          done
+          # The entry must be a standalone module with the factory default export.
+          bun -e 'const m = await import(process.cwd() + "/.pack/package/server/index.js");
+                  if (typeof m.default !== "function") { console.error("no default-export factory"); process.exit(1); }
+                  console.log("server entry OK: default-export factory present");'
+          echo "tarball layout OK"
+
+      - name: Attach to release
+        if: github.event_name == 'release'
+        working-directory: ${{ env.SURFACE_DIR }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "${{ github.event.release.tag_name }}" \
+            "${{ steps.pack.outputs.tarball }}" --clobber
+
+      - name: Upload as run artifact (workflow_dispatch testing)
+        if: github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.pack.outputs.tarball }}
+          path: ${{ env.SURFACE_DIR }}/${{ steps.pack.outputs.tarball }}
+          if-no-files-found: error
