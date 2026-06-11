@@ -1,14 +1,24 @@
 {
   "name": "woven-boulder",
   "displayName": "Woven Boulder",
-  "tagline": "Boulder civic meetings, issues, and topics — public projections over the boulder vault.",
+  "tagline": "Boulder civic meetings, issues, and topics \u2014 public projections over the boulder vault.",
   "path": "/surface/woven-boulder",
   "version": "0.1.0",
   "audience": "public",
   "vault_default": "boulder",
-  "scopes_required": ["vault:boulder:read"],
+  "scopes_required": [
+    "vault:boulder:read"
+  ],
   "server": {
     "entry": "server/index.ts",
-    "format": "markdown"
+    "format": "markdown",
+    "csp": {
+      "img-src": [
+        "https://i.ytimg.com"
+      ],
+      "frame-src": [
+        "https://www.youtube-nocookie.com"
+      ]
+    }
   }
 }
