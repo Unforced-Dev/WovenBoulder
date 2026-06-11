@@ -53,8 +53,8 @@ Evidence: the kit conformance suite runs in `server/__tests__/conformance.test.t
 
 ## Transport & headers
 
-Served only through the hub proxy (no self-tunnel). Host-stamped CSP with
-the add-only `server.csp` override (`img-src i.ytimg.com`,
+Served only through the hub proxy (no self-tunnel). Host-stamped CSP header, add-only
+via the `server.csp` field in `meta.json` (`img-src i.ytimg.com`,
 `frame-src youtube-nocookie.com` — click-to-load embeds only).
 No WebSocket capability is declared; the hub's WS caps don't apply here.
 
